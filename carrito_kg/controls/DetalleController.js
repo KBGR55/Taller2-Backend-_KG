@@ -1,6 +1,7 @@
 'use strict';
 const { body, validationResult, check } = require('express-validator');
 var models = require('../models');
+const { ENUM } = require('sequelize');
 var detalle = models.detalle;
 var rol = models.rol;
 var cuenta = models.cuenta;
@@ -19,7 +20,8 @@ class DetalleController {
                 let facturaAux = await factura.findOne({ where: { external_id: factura_id } });
                 console.log(autoAux);
                 if (autoAux && facturaAux) {
-                    if (autoAux.estado === true) {
+                    console.log(autoAux.estado);
+                    if (autoAux.estado === 'DISPONIBLE') {
                         //data arreglo asociativo= es un direccionario = clave:valor
                         var data = {
                             id_factura: facturaAux.id,
@@ -29,7 +31,7 @@ class DetalleController {
                         try {
                             await detalle.create(data, { transaction });
                             await transaction.commit();
-                            autoAux.estado = false;
+                            autoAux.estado = 'VENDIDO';
                             var resultA = await autoAux.save();
                             if (resultA === null) {
                                 res.status(400);

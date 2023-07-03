@@ -15,6 +15,14 @@ const DetalleController=require('../controls/DetalleController');
 var detalleController=new DetalleController();
 const CuentaController=require('../controls/CuentaController');
 var cuentaController=new CuentaController();
+const RepuestoController=require('../controls/RepuestoController');
+var repuestoController=new RepuestoController();
+const OrdenIngresoController =require('../controls/OrdenIngresoController');
+var ordenIngresoController=new OrdenIngresoController();
+const OrdenCompraController=require('../controls/OrdenCompraController');
+var ordenCompraController=new OrdenCompraController();
+const DetalleOrdenCompraController=require('../controls/DetalleOrdenCompraController');
+var detalleOrdenCompraController=new DetalleOrdenCompraController();
 let jwt = require('jsonwebtoken');
 
 //Middleware||Falta autorizacion para roles
@@ -71,19 +79,34 @@ router.post('/marca/guardar',auth,marcaController.guardar);
 router.post('/marca/modificar',auth,marcaController.modificar);
 router.get('/marcas/num',auth,marcaController.numMarca);
 //AUTO
-router.get('/autos',auth,autoController.listar);
-router.post('/auto/guardar',auth,autoController.guardar);
+router.get('/autos',autoController.listar);
+router.post('/auto/guardar',autoController.guardar);
 router.post('/autos/modificar',auth,autoController.modificar);
 router.get('/auto/obtener/:external',auth,autoController.obtener);
 router.get('/autos/disponibles',auth,autoController.listarDisponibles);
 router.get('/autos/vendidos',auth,autoController.listarVendidos);
+router.get("/autos/ingresarReparacion",auth,autoController.listarIngresarReparacion);
 router.get('/autos/num',auth,autoController.numAuto);
+//ORDEN INGRESO
+router.get('/ordenIngresos',ordenIngresoController.listar);
+router.post('/ordenIngreso/guardar',auth,ordenIngresoController.guardar);
+router.get('/ordenIngreso/obtener/:id',auth,ordenIngresoController.obtener);
+router.post('/ordenCompra/calcularvalores',ordenCompraController.calcularValoresOrden);
+//ORDEEN COMPRA
+router.get('/ordenCompras',ordenCompraController.listar);
+router.post('/ordenCompra/crear',auth,ordenCompraController.crearOrdenCompra);
+//DETALLE ORDEN COMPRA 
+router.post('/detalleOrdenIngreso/guardar',auth,detalleOrdenCompraController.guardar);
 //FACTURA
 router.get('/facturas',facturaController.listar);
 router.post('/factura/crear',facturaController.crearFactura);
 router.post('/factura/crear/guardar',facturaController.guardar);
 //DETALLE
 router.post('/factura/crear/guardar/datalle',detalleController.guardar);
+//REPUESTO
+router.get('/repuestos',repuestoController.listar);
+router.post('/repuesto/guardar',repuestoController.guardar);
+router.get('/repuesto/obtener/:external_id',repuestoController.obtener);
 /*
 router.get('/sumar/:a/:b', function(req, res, next) {
   var a= req.params.a*1;

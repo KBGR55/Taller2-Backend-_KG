@@ -15,7 +15,7 @@ const salRounds = 8;
 class FacturaController {
     async listar(req, res) {
         var listar = await factura.findAll({
-            attributes: ['fecha_emision', 'fecha_emision', 'numero_factura', 'sub_total',
+            attributes: ['fecha_emision', 'numero_factura', 'sub_total',
                 'iva', 'total_pagar', 'external_id', 'estado'],
             include: { model: persona, as: 'persona', attributes: ['apellidos', 'nombres', 'external_id', 'direccion', 'identificacion', 'tipo_identificacion'] }
         });

@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
         persona.belongsTo(models.rol, {foreignKey: 'id_rol'});
         persona.hasOne(models.cuenta, { foreignKey: 'id_persona', as: 'cuenta'});
         persona.hasMany(models.factura, { foreignKey: 'id_persona', as: 'factura'});
+        persona.hasMany(models.ordenIngreso, { foreignKey: 'id_persona', as: 'ordenIngreso'});
     };
  
     return persona;

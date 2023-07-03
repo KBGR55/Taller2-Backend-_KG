@@ -8,15 +8,6 @@ const bcypt = require('bcrypt');
 const salRounds = 8;
 
 class PersonaController {
-    /*async listar(req,res){
-        var listar= await persona.findAll({
-            attributes:['apellidos','nombres','external_id', 'direccion', 'identificacion', 'tipo_identificacion']
-        });
-        var listarC= await cuenta.findAll({
-            attributes:['usuario']
-        });
-        res.json({msg:'OK!',code:200,info:{personas:listar,cuentas: listarC}});
-    }*/
     async listar(req, res) {
         var listar = await persona.findAll({
             attributes: ['apellidos', 'nombres', 'external_id', 'direccion', 'identificacion', 'tipo_identificacion'],

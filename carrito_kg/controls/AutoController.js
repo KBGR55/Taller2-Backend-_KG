@@ -19,7 +19,7 @@ class AutoController {
 
     async listarDisponibles(req, res) {
         var listar = await auto.findAll({
-            where: { estado: true },
+            where: { estado: 'DISPONIBLE' },
             attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'duenio'],
             include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
         });
@@ -35,7 +35,27 @@ class AutoController {
         res.status(200);
         res.json({ msg: 'OK!', code: 200, info: listar });
     }
-
+    async listarReparacion(req, res) {
+        var listar = await auto.findAll({
+            where: { estado: 'REPARACION' },
+            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio'],
+            include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
+        });
+        res.status(200);
+        res.json({ msg: 'OK!', code: 200, info: listar });
+    }
+    async listarIngresarReparacion(req, res) {
+        var listar = await auto.findAll({
+            where: {
+                duenio: { [Op.not]: 'NO_DATA' },
+                estado: { [Op.not]: 'REPARACION' }
+            },
+            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio'],
+            include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
+        });
+        res.status(200);
+        res.json({ msg: 'OK!', code: 200, info: listar });
+    }
     async obtener(req, res) {
         const external = req.params.external;
         var listar = await auto.findOne({
@@ -108,7 +128,7 @@ class AutoController {
             if (carrito.estado === true) {
                 var uuid = require('uuid');
                 carrito.anio = req.body.anio,
-                carrito.costo = req.body.costo;
+                    carrito.costo = req.body.costo;
                 carrito.placa = req.body.placa;
                 carrito.color = req.body.color;
                 carrito.external_id = uuid.v4();
@@ -133,7 +153,7 @@ class AutoController {
                     code: 201
                 });
             }
-            
+
         }
     }
 }
