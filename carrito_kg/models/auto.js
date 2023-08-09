@@ -2,6 +2,7 @@
 const { UUIDV4 } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     const auto= sequelize.define('auto', {
+        foto: { type: DataTypes.STRING(70), defaultValue: "NO_DATA"},
         anio: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
         placa: { type: DataTypes.STRING(50), defaultValue: "NO_DATA" ,unique: true},
         color: { type: DataTypes.STRING(50), defaultValue: "NO_DATA" },

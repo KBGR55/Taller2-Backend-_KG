@@ -45,11 +45,13 @@ class CuentaController {
                             expiresIn: '12h'
                         });
                         res.json({
-                            user: login.persona.nombres + ' '+login.persona.apellidos,
+                            code: 200,
                             msg: "Bienvenid@ "+ login.persona.nombres + ' '+login.persona.apellidos,
-                            token: token,
-                            correo: login.usuario,
-                            code: 200
+                            info: {
+                                token: token,
+                                user: login.persona.nombres + ' ' + login.persona.apellidos,
+                                correo: login.usuario,
+                            }
                         });
                     } else {
                         res.json({
@@ -68,6 +70,7 @@ class CuentaController {
             res.status(400);
             res.json({ msg: "Datos faltantes", code: 400, errors: errors });
         }
+        console.log(res.json());
     }
    
 }

@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const multer = require('multer');
 const {body}=require('express-validator');
 const RolController=require('../controls/RolController');
 var rolController=new RolController();
@@ -23,6 +24,8 @@ const OrdenCompraController=require('../controls/OrdenCompraController');
 var ordenCompraController=new OrdenCompraController();
 const DetalleOrdenCompraController=require('../controls/DetalleOrdenCompraController');
 var detalleOrdenCompraController=new DetalleOrdenCompraController();
+const PagoController = require('../controls/PagoController');
+var pagoController = new PagoController();
 let jwt = require('jsonwebtoken');
 
 //Middleware||Falta autorizacion para roles
@@ -70,6 +73,10 @@ router.post('/persona/guardar',[
   body('apellidos','Ingrese su apellido').trim().exists().not().isEmpty().isLength({min:3,max:50}).withMessage("Ingrese un valor mayor a 3 y menor que 50"),
   body('nombres','Ingrese su nombre').trim().exists().not().isEmpty().isLength({min:3,max:50}).withMessage("Ingrese un valor mayor a 3 y menor que 50")
 ],personaController.guardar);
+router.post('/persona/cliente/guardar',[
+  body('apellidos','Ingrese su apellido').trim().exists().not().isEmpty().isLength({min:3,max:50}).withMessage("Ingrese un valor mayor a 3 y menor que 50"),
+  body('nombres','Ingrese su nombre').trim().exists().not().isEmpty().isLength({min:3,max:50}).withMessage("Ingrese un valor mayor a 3 y menor que 50")
+],personaController.guardar);
 router.post('/personas/modificar',auth,personaController.modificar);
 router.get('/personas',auth,personaController.listar);
 router.get('/personas/obtener/:external',auth,personaController.obtener);
@@ -83,7 +90,7 @@ router.get('/autos',autoController.listar);
 router.post('/auto/guardar',autoController.guardar);
 router.post('/autos/modificar',auth,autoController.modificar);
 router.get('/auto/obtener/:external',auth,autoController.obtener);
-router.get('/autos/disponibles',auth,autoController.listarDisponibles);
+router.get('/autos/disponibles',autoController.listarDisponibles);
 router.get('/autos/vendidos',auth,autoController.listarVendidos);
 router.get("/autos/ingresarReparacion",auth,autoController.listarIngresarReparacion);
 router.get('/autos/num',auth,autoController.numAuto);
@@ -107,28 +114,35 @@ router.post('/factura/crear/guardar/datalle',detalleController.guardar);
 router.get('/repuestos',repuestoController.listar);
 router.post('/repuesto/guardar',repuestoController.guardar);
 router.get('/repuesto/obtener/:external_id',repuestoController.obtener);
-/*
-router.get('/sumar/:a/:b', function(req, res, next) {
-  var a= req.params.a*1;
-  var b= Number(req.params.b);
-  var c=a+b;
-  res.status(200);
-    res.json({"msg":"OK","resp":c});
-  
- 
-});
-router.post('/sumar', function(req, res, next) {
-  var a= Number(req.body.a);
-  var b= Number(req.body.b);
-  if(isNaN(a)||isNaN(b)){
-    res.status(400);
-    res.json({"msg":"Error: Faltan datos..."});
+//Pago
+router.post('/checkout/guardar', pagoController.guardar);
+router.get('/checkout/obtener/:checkoutId', pagoController.obtener);
+
+// SET STORAGE
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/images') // Ruta donde se guardarán las imágenes
+  },
+  filename: function (req, file, cb) {
+    // Generamos un nombre de archivo único utilizando el nombre del campo y la marca de tiempo actual
+    cb(null, file.fieldname + '-' + Date.now()+".jpg");
   }
-  var c=a+b;
-  res.status(200);
-    res.json({"msg":"OK","resp":c});
-  
- 
-});
-*/
+})
+
+// Configuramos el filtro para permitir solo imágenes
+function fileFilter(req, file, cb) {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true); // Aceptamos el archivo
+  } else {
+    cb(new Error('El archivo no es una imagen válido.'), false); // Rechazamos el archivo
+  }
+}
+
+var upload = multer({ storage: storage, fileFilter: fileFilter});
+// Ruta para subir el archivo y los datos del auto juntos
+router.post('/auto/guardar/img', upload.single('myImage'), autoController.guardar);
+
+//-----Imagen
+router.get('/imagen/:ruta', autoController.imagenes);
+
 module.exports = router;

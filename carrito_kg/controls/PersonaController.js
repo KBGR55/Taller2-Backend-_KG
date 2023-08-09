@@ -82,6 +82,58 @@ class PersonaController {
         }
     }
 
+    async guardar_cliente(req, res) {
+        let errors = validationResult(req);
+        if (errors.isEmpty()) {
+            var rol_id = 'cliente';
+            if (rol_id != undefined) {
+                let rolAux = await rol.findOne({ where: { nombre: rol_id } });
+                console.log(rolAux);
+                if (rolAux) {
+                    var claveHash = function (clave) {
+                        return bcypt.hashSync(clave, bcypt.genSaltSync(salRounds), null);
+                    };
+                    //data arreglo asociativo= es un direccionario = clave:valor
+                    var data = {
+                        identificacion: req.body.identificacion,
+                        tipo_identificacion: req.body.dni_tipo,
+                        nombres: req.body.nombres,
+                        apellidos: req.body.apellidos,
+                        direccion: req.body.direccion,
+                        id_rol: rolAux.id,
+                        cuenta: {
+                            usuario: req.body.correo,
+                            clave: claveHash(req.body.clave)
+                        }
+                        
+                    }
+                    let transaction = await models.sequelize.transaction();
+                    try {
+                        await persona.create(data, { include: [{ model: models.cuenta, as: "cuenta" }], transaction });
+                        await transaction.commit();
+                        res.json({ msg: "Se han registrado los datos", code: 200 });
+                    } catch (error) {
+                        if (transaction) await transaction.rollback();
+                        if (error.errors && error.errors[0].message) {
+                            res.json({ msg: error.errors[0].message, code: 200 });
+                        } else {
+                            res.json({ msg: error.message, code: 200 });
+                        }
+                    }
+                } else {
+                    res.status(400);
+                    res.json({ msg: "Datos no encontrados", code: 400 });
+                }
+            } else {
+                res.status(400);
+                res.json({ msg: "Faltan datos", code: 400 });
+            }
+        } else {
+            res.status(400);
+            res.json({ msg: "Datos faltantes", code: 400, errors: errors });
+        }
+    }
+
     async modificar(req, res) {
         var person = await persona.findOne({ where: { external_id: req.body.external } });
         if (person === null) {

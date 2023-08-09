@@ -6,30 +6,38 @@ var auto = models.auto;
 var marca = models.marca;
 const bcypt = require('bcrypt');
 const salRounds = 8;
+const fs = require('fs');
+//var formidable=require('f');
+
 
 class AutoController {
     async listar(req, res) {
         var listar = await auto.findAll({
-            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio'],
+            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio','foto'],
             include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
         });
         res.status(200);
         res.json({ msg: 'OK!', code: 200, info: listar });
+    }
+  
+    async listarDisponibles(req, res) {
+        try {
+            var listar = await auto.findAll({
+                where: { estado: 'DISPONIBLE' },
+                attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'duenio', 'foto'],
+                include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
+            });
+            res.status(200).json({ msg: 'OK!', code: 200, info: listar });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ msg: 'Error interno del servidor', code: 500 });
+        }
     }
 
-    async listarDisponibles(req, res) {
-        var listar = await auto.findAll({
-            where: { estado: 'DISPONIBLE' },
-            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'duenio'],
-            include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
-        });
-        res.status(200);
-        res.json({ msg: 'OK!', code: 200, info: listar });
-    }
     async listarVendidos(req, res) {
         var listar = await auto.findAll({
             where: { duenio: { [Op.not]: 'NO_DATA' } },
-            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio'],
+            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio','foto'],
             include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
         });
         res.status(200);
@@ -38,7 +46,7 @@ class AutoController {
     async listarReparacion(req, res) {
         var listar = await auto.findAll({
             where: { estado: 'REPARACION' },
-            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio'],
+            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio','foto'],
             include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
         });
         res.status(200);
@@ -50,7 +58,7 @@ class AutoController {
                 duenio: { [Op.not]: 'NO_DATA' },
                 estado: { [Op.not]: 'REPARACION' }
             },
-            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio'],
+            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado', 'duenio','foto'],
             include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] }
         });
         res.status(200);
@@ -60,7 +68,7 @@ class AutoController {
         const external = req.params.external;
         var listar = await auto.findOne({
             where: { external_id: external }, include: { model: marca, as: 'marca', attributes: ['nombre', 'modelo', 'pais'] },
-            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado']
+            attributes: ['anio', 'placa', 'color', 'costo', 'external_id', 'estado','foto']
         });
         if (listar === null) {
             listar = {};
@@ -68,12 +76,16 @@ class AutoController {
         res.status(200);
         res.json({ msg: 'OK!', code: 200, info: listar });
     }
+
     async numAuto(req, res) {
         const contar = await auto.count();
         res.json({ msg: 'OK!', code: 200, info: contar });
     }
+    
     async guardar(req, res) {
         let errors = validationResult(req);
+        console.log("BABOSA GUILARYYY",req.file);
+        
         if (errors.isEmpty()) {
             var marca_id = req.body.external_marca;
             if (marca_id != undefined) {
@@ -86,6 +98,7 @@ class AutoController {
                         placa: req.body.placa,
                         color: req.body.color,
                         costo: req.body.costo,
+                        foto: req.file. filename, // Aquí guardamos el nombre de la imagen
                         id_marca: marcaAux.id
                     }
                     let transaction = await models.sequelize.transaction();
@@ -114,6 +127,7 @@ class AutoController {
             res.json({ msg: "Datos faltantes", code: 400, errors: errors });
         }
     }
+
     async modificar(req, res) {
         console.log("ENTRO EN EL METODO")
         var carrito = await auto.findOne({ where: { external_id: req.body.external_id } });
@@ -155,6 +169,13 @@ class AutoController {
             }
 
         }
+    }
+    async imagenes(req, res){
+        console.log(req.params);
+        const nombreImagen = req.params.ruta;
+        const imagePath = ('/home/karen/Documentos/Desarrollo Basado en Plataformas/trabajos_node/carrito_kg/public/imagen/'+nombreImagen); 
+        res.status(200);
+        res.sendFile(imagePath);
     }
 }
 
